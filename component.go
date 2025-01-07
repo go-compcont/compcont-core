@@ -7,12 +7,20 @@ import (
 
 type ComponentTypeID string
 
+func (n ComponentTypeID) String() string {
+	return string(n)
+}
+
 type ComponentName string
 
 var componentNameRegexp = regexp.MustCompile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 func (n ComponentName) Validate() bool {
 	return componentNameRegexp.Match([]byte(n))
+}
+
+func (n ComponentName) String() string {
+	return string(n)
 }
 
 type ComponentConfig struct {
@@ -25,18 +33,18 @@ type ComponentConfig struct {
 
 // 运行时的组件的结构
 type Component struct {
-	Context  Context // 运行时一个组件必然存在一个Context，且不可变，这里使用值类型
-	Instance any
+	BuildContext BuildContext // 运行时一个组件必然存在一个Context，且不可变，这里使用值类型
+	Instance     any
 }
 
 // 构造组件时使用的上下文环境结构
-type Context struct {
+type BuildContext struct {
 	Container IComponentContainer // 当前组件所在容器
 	Config    ComponentConfig     // 组件配置
 	Mount     *Component          // 组件实例有可能不存在
 }
 
-func (c *Context) FindRoot() Context {
+func (c *BuildContext) FindRoot() BuildContext {
 	currentNode := c.Container
 	for {
 		parent := currentNode.GetParent()
@@ -48,7 +56,7 @@ func (c *Context) FindRoot() Context {
 	return currentNode.GetContext()
 }
 
-func (c *Context) GetAbsolutePath() (path []ComponentName) {
+func (c *BuildContext) GetAbsolutePath() (path []ComponentName) {
 	path = append(path, c.Config.Name)
 	currentNode := c.Container
 	for {
@@ -68,6 +76,6 @@ func (c *Context) GetAbsolutePath() (path []ComponentName) {
 type IComponentFactory interface {
 	Type() ComponentTypeID // 组件唯一类型名称
 	// 组件创建器，这里并没有明确config应该到底是什么类型，可以放到具体实现上既可以是map也可以是struct
-	CreateInstance(ctx Context, config any) (instance any, err error)
-	DestroyInstance(ctx Context, instance any) (err error) // 组件销毁器
+	CreateInstance(ctx BuildContext, config any) (instance any, err error)
+	DestroyInstance(ctx BuildContext, instance any) (err error) // 组件销毁器
 }

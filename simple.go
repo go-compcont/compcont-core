@@ -9,8 +9,8 @@ import (
 )
 
 type TypedComponent[Instance any] struct {
-	Context  Context
-	Instance Instance
+	BuildContext BuildContext
+	Instance     Instance
 }
 
 func GetComponent[Instance any](container IComponentContainer, name ComponentName) (ret TypedComponent[Instance], err error) {
@@ -20,12 +20,12 @@ func GetComponent[Instance any](container IComponentContainer, name ComponentNam
 	}
 	instance, ok := r.Instance.(Instance)
 	if !ok {
-		err = fmt.Errorf("get component failed, %w, name: %s, component type: %s, expected instance type %v, but got %v", ErrComponentTypeMismatch, name, r.Context.Config.Type, reflect.TypeOf(ret.Instance), reflect.TypeOf(r.Instance))
+		err = fmt.Errorf("get component failed, %w, name: %s, component type: %s, expected instance type %v, but got %v", ErrComponentTypeMismatch, name, r.BuildContext.Config.Type, reflect.TypeOf(ret.Instance), reflect.TypeOf(r.Instance))
 		return
 	}
 	ret = TypedComponent[Instance]{
-		Context:  r.Context,
-		Instance: instance,
+		BuildContext: r.BuildContext,
+		Instance:     instance,
 	}
 	return
 }
@@ -42,15 +42,15 @@ func LoadAnonymousComponent[Instance any](container IComponentContainer, config 
 		return
 	}
 	ret = TypedComponent[Instance]{
-		Context:  r.Context,
-		Instance: instance,
+		BuildContext: r.BuildContext,
+		Instance:     instance,
 	}
 	return
 }
 
-type CreateInstanceFunc func(ctx Context, config any) (instance any, err error)
+type CreateInstanceFunc func(ctx BuildContext, config any) (instance any, err error)
 
-type DestroyInstanceFunc func(ctx Context, instance any) (err error)
+type DestroyInstanceFunc func(ctx BuildContext, instance any) (err error)
 
 func decodeMapConfig[Config any](mapConfig map[string]any, structureConfig *Config) (err error) {
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
@@ -73,10 +73,10 @@ func decodeMapConfig[Config any](mapConfig map[string]any, structureConfig *Conf
 	return
 }
 
-type TypedCreateInstanceFunc[Config any, Instance any] func(ctx Context, config Config) (instance Instance, err error)
+type TypedCreateInstanceFunc[Config any, Instance any] func(ctx BuildContext, config Config) (instance Instance, err error)
 
 func (f TypedCreateInstanceFunc[Config, Instance]) ToAny() CreateInstanceFunc {
-	return func(ctx Context, rawConfig any) (comp any, err error) {
+	return func(ctx BuildContext, rawConfig any) (comp any, err error) {
 		switch v := rawConfig.(type) {
 		case nil:
 			var cfg Config
@@ -97,10 +97,10 @@ func (f TypedCreateInstanceFunc[Config, Instance]) ToAny() CreateInstanceFunc {
 	}
 }
 
-type TypedDestroyInstanceFunc[Instance any] func(ctx Context, instance Instance) (err error)
+type TypedDestroyInstanceFunc[Instance any] func(ctx BuildContext, instance Instance) (err error)
 
 func (f TypedDestroyInstanceFunc[Component]) ToAny() DestroyInstanceFunc {
-	return func(ctx Context, component any) (err error) {
+	return func(ctx BuildContext, component any) (err error) {
 		if v, ok := component.(Component); ok {
 			return f(ctx, v)
 		}
@@ -141,14 +141,14 @@ func (s *TypedSimpleComponentFactory[Config, Component]) Type() ComponentTypeID 
 	return s.TypeID
 }
 
-func (s *TypedSimpleComponentFactory[Config, Component]) CreateInstance(ctx Context, config any) (instance any, err error) {
+func (s *TypedSimpleComponentFactory[Config, Component]) CreateInstance(ctx BuildContext, config any) (instance any, err error) {
 	if s.CreateInstanceFunc == nil {
 		return
 	}
 	return s.CreateInstanceFunc.ToAny()(ctx, config)
 }
 
-func (s *TypedSimpleComponentFactory[Config, Component]) DestroyInstance(ctx Context, instance any) (err error) {
+func (s *TypedSimpleComponentFactory[Config, Component]) DestroyInstance(ctx BuildContext, instance any) (err error) {
 	if s.DestroyInstanceFunc == nil {
 		return
 	}

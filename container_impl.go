@@ -7,7 +7,7 @@ import (
 )
 
 type ComponentContainer struct {
-	context         Context
+	context         BuildContext
 	parent          IComponentContainer
 	factoryRegistry IFactoryRegistry
 	components      map[ComponentName]Component
@@ -15,7 +15,7 @@ type ComponentContainer struct {
 }
 
 // GetSelfComponentName implements IComponentContainer.
-func (c *ComponentContainer) GetContext() Context {
+func (c *ComponentContainer) GetContext() BuildContext {
 	return c.context
 }
 
@@ -67,7 +67,7 @@ func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Co
 		}
 
 		// 寻找到要引用的树节点，再从对应节点上获取组件
-		var ctx Context
+		var ctx BuildContext
 		ctx, err = find(c, findPath, absolute)
 		if err != nil {
 			return
@@ -88,7 +88,7 @@ func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Co
 		return
 	}
 
-	ctx := Context{
+	ctx := BuildContext{
 		Config:    config,
 		Container: c,
 	}
@@ -102,7 +102,7 @@ func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Co
 	// 构造组件
 	component = Component{Instance: instance}
 	ctx.Mount = &component
-	component.Context = ctx
+	component.BuildContext = ctx
 	return
 }
 
@@ -190,7 +190,7 @@ func (c *ComponentContainer) LoadedComponentNames() (names []ComponentName) {
 type options struct {
 	factoryRegistry IFactoryRegistry
 	parent          IComponentContainer
-	context         Context
+	context         BuildContext
 }
 
 type optionsFunc func(o *options)
@@ -207,7 +207,7 @@ func WithParentContainer(parent IComponentContainer) optionsFunc {
 	}
 }
 
-func WithContext(ctx Context) optionsFunc {
+func WithContext(ctx BuildContext) optionsFunc {
 	return func(o *options) {
 		o.context = ctx
 	}

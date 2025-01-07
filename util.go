@@ -60,7 +60,7 @@ func topologicalSort(cfgMap map[ComponentName]set[ComponentName]) ([]ComponentNa
 }
 
 // 从当前节点定位一个组件的上下文
-func find(currentNode IComponentContainer, findPath []ComponentName, absolute bool) (ctx Context, err error) {
+func find(currentNode IComponentContainer, findPath []ComponentName, absolute bool) (ctx BuildContext, err error) {
 	// 如果是绝对路径，将currentNode指针指向容器树的根节点
 	if absolute {
 		for {
@@ -88,7 +88,7 @@ func find(currentNode IComponentContainer, findPath []ComponentName, absolute bo
 
 		// 已经找到最后一个路径了，可以返回
 		if i == len(findPath)-1 {
-			ctx = component.Context
+			ctx = component.BuildContext
 			return
 		}
 
@@ -99,6 +99,6 @@ func find(currentNode IComponentContainer, findPath []ComponentName, absolute bo
 		}
 	}
 
-	ctx = component.Context
+	ctx = component.BuildContext
 	return
 }

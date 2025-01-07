@@ -2,7 +2,7 @@ package compcont
 
 // 组件的容器抽象
 type IComponentContainer interface {
-	GetContext() Context                                                            // 当容器自身作为组件时的组件上下文对象
+	GetContext() BuildContext                                                       // 当容器自身作为组件时的组件上下文对象
 	FactoryRegistry() IFactoryRegistry                                              // 该组件容器所使用的组件工厂注册器
 	LoadedComponentNames() (names []ComponentName)                                  // 获取所有已加载的组件名
 	LoadNamedComponents(configs []ComponentConfig) error                            // 实例化一批组件，内部自动基于拓扑排序的顺序完成组件的实例化
