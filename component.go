@@ -16,6 +16,10 @@ type ComponentName string
 var componentNameRegexp = regexp.MustCompile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
 func (n ComponentName) Validate() bool {
+	// 可以匿名
+	if len(n) == 0 {
+		return true
+	}
 	return componentNameRegexp.Match([]byte(n))
 }
 
