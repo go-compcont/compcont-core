@@ -45,7 +45,7 @@ func (c *ComponentContainer) FactoryRegistry() IFactoryRegistry {
 func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Component, err error) {
 	if config.Type == "" {
 		if config.Refer == "" { // 引用组件
-			err = fmt.Errorf("%w, type && refer are empty", ErrComponentConfigInvalid)
+			err = fmt.Errorf("%w, type && refer are empty, componentName: %s, componentType: %s, refer: %s", ErrComponentConfigInvalid, config.Name, config.Type, config.Refer)
 			return
 		}
 		parts := strings.Split(config.Refer, "/")
