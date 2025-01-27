@@ -125,7 +125,10 @@ func (c *ComponentContainer) LoadNamedComponents(configs []ComponentConfig) (err
 	configMap := make(map[ComponentName]ComponentConfig)
 	for _, cfg := range configs {
 		if !cfg.Name.Validate() {
-			return fmt.Errorf("%w, name: %s", ErrComponentNameInvalid, cfg.Name)
+			return fmt.Errorf("%w, name: %s, type: %s", ErrComponentNameInvalid, cfg.Name, cfg.Type)
+		}
+		if _, ok := configMap[cfg.Name]; ok {
+			return fmt.Errorf("%w, name: %s", ErrComponentAlreadyExists, cfg.Name)
 		}
 		configMap[cfg.Name] = cfg
 	}
@@ -159,7 +162,6 @@ func (c *ComponentContainer) LoadNamedComponents(configs []ComponentConfig) (err
 		}
 	}
 
-	// 组件的顺序加载器，TODO 可以实现组件的并发启动优化
 	for _, name := range orders {
 		component, err := c.loadComponent(configMap[name])
 		if err != nil {
