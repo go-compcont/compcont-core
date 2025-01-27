@@ -1,6 +1,7 @@
 package compcont
 
 import (
+	"errors"
 	"fmt"
 	"slices"
 )
@@ -83,6 +84,28 @@ func find(currentNode IComponentContainer, findPath []ComponentName, absolute bo
 		}
 		component, err = currentNode.GetComponent(partName)
 		if err != nil {
+			if errors.Is(err, ErrComponentNameNotFound) {
+				path := ""
+				if !absolute {
+					path += "."
+				}
+				for _, e := range findPath {
+					path += "/" + e.String()
+				}
+
+				currentNodeName := currentNode.GetContext().Config.Name
+				if currentNodeName == "" {
+					currentNodeName = "<ROOT>"
+				}
+
+				err = fmt.Errorf(
+					"%w, currentNode: %s, path: %s",
+					ErrComponentNameNotFound,
+					currentNodeName,
+					path,
+				)
+				return
+			}
 			return
 		}
 
@@ -93,9 +116,11 @@ func find(currentNode IComponentContainer, findPath []ComponentName, absolute bo
 		}
 
 		// 还要继续向后寻找，如果下一个要寻找的节点不是容器，则直接报错
-		if _, ok := component.Instance.(IComponentContainer); !ok {
+		if v, ok := component.Instance.(IComponentContainer); !ok {
 			err = fmt.Errorf("refer path error, %s is not a container", partName)
 			return
+		} else {
+			currentNode = v
 		}
 	}
 
