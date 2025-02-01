@@ -183,8 +183,24 @@ func (c *ComponentContainer) UnloadNamedComponents(name []ComponentName, recursi
 func (c *ComponentContainer) LoadedComponentNames() (names []ComponentName) {
 	c.mu.RLock()
 	defer c.mu.RUnlock()
-	for t := range c.components {
-		names = append(names, t)
+
+	// 构建组件依赖图
+	dag := make(map[ComponentName]set[ComponentName])
+	for _, cfg := range c.components {
+		name := cfg.BuildContext.Config.Name
+		if _, ok := dag[name]; !ok {
+			dag[name] = make(map[ComponentName]struct{})
+		}
+		for _, dep := range cfg.BuildContext.Config.Deps {
+			dag[name][dep] = struct{}{}
+		}
+	}
+
+	// 对新组件集合进行拓扑排序
+	var err error
+	names, err = topologicalSort(dag)
+	if err != nil {
+		panic(fmt.Errorf("topologicalSort error: %w", err))
 	}
 	return
 }
@@ -224,9 +240,19 @@ func NewComponentContainer(optFns ...optionsFunc) (cr IComponentContainer) {
 	if opt.factoryRegistry == nil {
 		opt.factoryRegistry = DefaultFactoryRegistry
 	}
-	return &ComponentContainer{
+	cc := &ComponentContainer{
 		factoryRegistry: opt.factoryRegistry,
 		parent:          opt.parent,
 		components:      make(map[ComponentName]Component),
 	}
+	comp := &Component{
+		Instance: cc,
+	}
+	cc.context = BuildContext{
+		Container: nil,
+		Mount:     comp,
+	}
+	comp.BuildContext = cc.context
+	cr = cc
+	return
 }

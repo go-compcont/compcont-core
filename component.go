@@ -44,7 +44,7 @@ type BuildContext struct {
 	Mount     *Component          // 组件实例有可能不存在
 }
 
-func (c *BuildContext) FindRoot() BuildContext {
+func (c BuildContext) FindRoot() BuildContext {
 	currentNode := c.Container
 	for {
 		parent := currentNode.GetParent()
@@ -56,9 +56,12 @@ func (c *BuildContext) FindRoot() BuildContext {
 	return currentNode.GetContext()
 }
 
-func (c *BuildContext) GetAbsolutePath() (path []ComponentName) {
-	path = append(path, c.Config.Name)
+func (c BuildContext) GetAbsolutePath() (path []ComponentName) {
 	currentNode := c.Container
+	if currentNode == nil { // 自身不属于任何容器，即根节点，根节点path为空
+		return
+	}
+	path = append(path, c.Config.Name)
 	for {
 		// 非根节点才加入path
 		parent := currentNode.GetParent()
