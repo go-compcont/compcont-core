@@ -58,9 +58,6 @@ func (c BuildContext) FindRoot() BuildContext {
 
 func (c BuildContext) GetAbsolutePath() (path []ComponentName) {
 	currentNode := c.Container
-	if currentNode == nil { // 自身不属于任何容器，即根节点，根节点path为空
-		return
-	}
 	path = append(path, c.Config.Name)
 	for {
 		// 非根节点才加入path
