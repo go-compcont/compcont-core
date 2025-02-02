@@ -62,6 +62,9 @@ func topologicalSort(cfgMap map[ComponentName]set[ComponentName]) ([]ComponentNa
 
 // 从当前节点定位一个组件的上下文
 func find(currentNode IComponentContainer, findPath []ComponentName, absolute bool) (ctx BuildContext, err error) {
+	if slices.Equal(findPath, []ComponentName{"yohe", "base", "session_provider"}) {
+		fmt.Println("debug")
+	}
 	// 如果是绝对路径，将currentNode指针指向容器树的根节点
 	if absolute {
 		for {

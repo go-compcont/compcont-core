@@ -240,11 +240,10 @@ func NewComponentContainer(optFns ...optionsFunc) (cr IComponentContainer) {
 	if opt.factoryRegistry == nil {
 		opt.factoryRegistry = DefaultFactoryRegistry
 	}
-	cc := &ComponentContainer{
+	return &ComponentContainer{
+		context:         opt.context,
 		factoryRegistry: opt.factoryRegistry,
 		parent:          opt.parent,
 		components:      make(map[ComponentName]Component),
 	}
-	cr = cc
-	return
 }
