@@ -245,14 +245,6 @@ func NewComponentContainer(optFns ...optionsFunc) (cr IComponentContainer) {
 		parent:          opt.parent,
 		components:      make(map[ComponentName]Component),
 	}
-	comp := &Component{
-		Instance: cc,
-	}
-	cc.context = BuildContext{
-		Container: nil,
-		Mount:     comp,
-	}
-	comp.BuildContext = cc.context
 	cr = cc
 	return
 }
