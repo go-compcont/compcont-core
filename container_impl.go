@@ -42,7 +42,7 @@ func (c *ComponentContainer) FactoryRegistry() IFactoryRegistry {
 	return c.factoryRegistry
 }
 
-func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Component, err error) {
+func (c *ComponentContainer) MustLoadComponent(config ComponentConfig) (component Component, err error) {
 	if config.Type == "" {
 		if config.Refer == "" { // 引用组件
 			err = fmt.Errorf("%w, type && refer are empty, componentName: %s, componentType: %s, refer: %s", ErrComponentConfigInvalid, config.Name, config.Type, config.Refer)
@@ -108,7 +108,7 @@ func (c *ComponentContainer) loadComponent(config ComponentConfig) (component Co
 
 // LoadAnonymousComponent 加载一个匿名组件，返回该组件实例，生命周期不由Registry控制，需要由该方法的调用方自行处理
 func (c *ComponentContainer) LoadAnonymousComponent(config ComponentConfig) (component Component, err error) {
-	return c.loadComponent(config)
+	return c.MustLoadComponent(config)
 }
 
 // PutComponent implements IComponentContainer.
@@ -163,7 +163,7 @@ func (c *ComponentContainer) LoadNamedComponents(configs []ComponentConfig) (err
 	}
 
 	for _, name := range orders {
-		component, err := c.loadComponent(configMap[name])
+		component, err := c.MustLoadComponent(configMap[name])
 		if err != nil {
 			return err
 		}

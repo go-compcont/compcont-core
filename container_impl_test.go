@@ -51,7 +51,7 @@ func (a *ComponentB) GetConfigB() ConfigB {
 var factoryB = &TypedSimpleComponentFactory[ConfigB, IComponentB]{
 	TypeID: "b",
 	CreateInstanceFunc: func(ctx BuildContext, config ConfigB) (component IComponentB, err error) {
-		componentA, err := config.InnerA.LoadComponent(ctx.Container)
+		componentA := config.InnerA.MustLoadComponent(ctx.Container)
 		if err != nil {
 			return
 		}

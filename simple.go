@@ -131,6 +131,14 @@ func (c TypedComponentConfig[Config, Component]) LoadComponent(container ICompon
 	return LoadAnonymousComponent[Component](container, c.ToAny())
 }
 
+func (c TypedComponentConfig[Config, Component]) MustLoadComponent(container IComponentContainer) (component TypedComponent[Component]) {
+	component, err := LoadAnonymousComponent[Component](container, c.ToAny())
+	if err != nil {
+		panic(fmt.Errorf("load component failed: %w", err))
+	}
+	return
+}
+
 type TypedSimpleComponentFactory[Config any, Component any] struct {
 	TypeID              ComponentTypeID
 	CreateInstanceFunc  TypedCreateInstanceFunc[Config, Component]
